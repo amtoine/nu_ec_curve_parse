@@ -120,7 +120,7 @@ def parse_ec_parameters_into_record [] {
     str replace --all --string "/*" "\n/*"
     | lines -s
     | each {str trim | str replace ',$' ""}
-    | parse --regex '\/\* (?<name>.*) \*\/ (?<value>.*)'
+    | parse --regex '\/\* (?<name>.*) \*\/\s*(?<value>.*)'
     | update value {|it| $it.value | str replace --all ", 0x" ""}
     | transpose -r
     | into record
