@@ -1,5 +1,3 @@
-#!/usr/bin/env nu
-
 ##! see https://github.com/openssl/openssl/blob/81fc390/crypto/ec/ec_curve.c for the original source
 
 ### the global pattern of a full EC struct
@@ -60,7 +58,7 @@
 ### │            │ 0xFF, 0x99, 0xDE, 0xF8, 0x36, 0x14, 0x6B, 0xC9, 0xB1, 0xB4, 0xD2, 0x28, 0x31                                                                                                                        │
 ### ╰────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ### ```
-let EC_STRUCT_PATTERN = '\{.*\} (?<name>.+) = \{ \{ (?<field>.+) \}, \{ (?<parameters>.+) \}'
+def EC_STRUCT_PATTERN [] { '\{.*\} (?<name>.+) = \{ \{ (?<field>.+) \}, \{ (?<parameters>.+) \}' }
 ### the field metadata
 ###
 ### # Example
@@ -75,10 +73,10 @@ let EC_STRUCT_PATTERN = '\{.*\} (?<name>.+) = \{ \{ (?<field>.+) \}, \{ (?<param
 ### │ 0 │ NID_X9_62_prime_field │ 20   │ 24     │ 1 │
 ### ╰───┴───────────────────────┴──────┴────────┴───╯
 ### ```
-let EC_FIELD_PATTERN = "{name}, {seed}, {others}, {c}"
+export def EC_FIELD_PATTERN [] { "{name}, {seed}, {others}, {c}" }
 
 ### take the raw source file and isolate the "static const struct"s in a list
-def isolate_ec_structs [] {
+export def isolate_ec_structs [] {
     split list "};"
     | find "static const struct"
     | each {
@@ -93,8 +91,8 @@ def isolate_ec_structs [] {
 ###
 ### # Example
 ### > see [EC_STRUCT_PATTERN] for a complete example
-def parse_ec_structs [] {
-    parse --regex $EC_STRUCT_PATTERN
+export def parse_ec_structs [] {
+    parse --regex (EC_STRUCT_PATTERN)
 }
 
 ### parse the "parameters" field of an EC structure into a record with all the actual parameters of an EC curve
@@ -116,7 +114,7 @@ def parse_ec_structs [] {
 ### │ order │ 0xFFFFFFFFFFFFFFFFFFFFFFFF99DEF836146BC9B1B4D22831 │
 ### ╰───────┴────────────────────────────────────────────────────╯
 ### ```
-def parse_ec_parameters_into_record [] {
+export def parse_ec_parameters_into_record [] {
     str replace --all --string "/*" "\n/*"
     | lines -s
     | each {str trim | str replace ',$' ""}
