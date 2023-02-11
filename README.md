@@ -3,8 +3,18 @@ A little script to parse the EC curves from the `openssl` source
 
 ## run the script
 ```bash
-./parse
+use parse.nu *
 ```
+```bash
+http get https://raw.githubusercontent.com/openssl/openssl/81fc390fd96ad9fae21cda919513fb696cd24028/crypto/ec/ec_curve.c
+| lines
+| isolate_ec_structs
+| parse_ec_structs
+| update name {|it| $it.name | str trim}
+| update field {|it| $it.field | parse (EC_FIELD_PATTERN)}
+| update parameters {|it| $it.parameters | parse_ec_parameters_into_record}
+```
+
 
 ## version of `nushell`
 | key                | value                                                                                                           |
