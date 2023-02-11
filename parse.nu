@@ -73,7 +73,7 @@ def EC_STRUCT_PATTERN [] { '\{.*\} (?<name>.+) = \{ \{ (?<field>.+) \}, \{ (?<pa
 ### │ 0 │ NID_X9_62_prime_field │ 20   │ 24     │ 1 │
 ### ╰───┴───────────────────────┴──────┴────────┴───╯
 ### ```
-export def EC_FIELD_PATTERN [] { "{name}, {seed}, {others}, {c}" }
+def EC_FIELD_PATTERN [] { "{name}, {seed}, {others}, {c}" }
 
 ### take the raw source file and isolate the "static const struct"s in a list
 export def isolate_ec_structs [] {
@@ -114,7 +114,7 @@ export def parse_ec_structs [] {
 ### │ order │ 0xFFFFFFFFFFFFFFFFFFFFFFFF99DEF836146BC9B1B4D22831 │
 ### ╰───────┴────────────────────────────────────────────────────╯
 ### ```
-export def parse_ec_parameters_into_record [] {
+def parse_ec_parameters_into_record [] {
     str replace --all --string "/*" "\n/*"
     | lines -s
     | each {str trim | str replace ',$' ""}
@@ -122,4 +122,11 @@ export def parse_ec_parameters_into_record [] {
     | update value {|it| $it.value | str replace --all ", 0x" ""}
     | transpose -r
     | into record
+}
+
+### take the incomplete structure from above commands and apply last updates to the columns
+export def finalize [] {
+    update name {|it| $it.name | str trim}
+    | update field {|it| $it.field | parse (EC_FIELD_PATTERN)}
+    | update parameters {|it| $it.parameters | parse_ec_parameters_into_record}
 }
